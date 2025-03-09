@@ -7,9 +7,18 @@
             display: block;
             margin: 0 auto;
             background: rgb(40, 40, 40); /* dark theme background */
+            touch-action: none;  /* Prevents default touch actions */
         }
         body {
             margin: 0;
+            overflow: hidden;
+            -webkit-touch-callout: none;    /* iOS Safari */
+            -webkit-user-select: none;      /* Safari */
+            -khtml-user-select: none;       /* Konqueror HTML */
+            -moz-user-select: none;         /* Firefox */
+            -ms-user-select: none;          /* Internet Explorer/Edge */
+            user-select: none;              /* Non-prefixed version */
+            -webkit-tap-highlight-color: transparent;  /* Remove tap highlight on iOS */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -572,6 +581,54 @@
             document.addEventListener('keyup', (e) => {
                 if (e.key === 'ArrowLeft') this.keys.left = false;
                 if (e.key === 'ArrowRight') this.keys.right = false;
+            });
+
+            // Add touch controls
+            let leftTouch = false;
+            let rightTouch = false;
+
+            document.addEventListener('touchstart', (event) => {
+                event.preventDefault();  // Prevent zooming
+                for (let touch of event.changedTouches) {
+                    const x = touch.clientX;
+                    if (x < window.innerWidth / 2) {
+                        leftTouch = true;
+                    } else {
+                        rightTouch = true;
+                    }
+                }
+
+                // Update ship movement
+                this.keys.left = leftTouch;
+                this.keys.right = rightTouch;
+
+                // Shoot if both sides are touched
+                if (leftTouch && rightTouch && this.ammo > 0) {
+                    this.shoot();
+                }
+            });
+
+            document.addEventListener('touchend', (event) => {
+                event.preventDefault();  // Prevent zooming
+                for (let touch of event.changedTouches) {
+                    const x = touch.clientX;
+                    if (x < window.innerWidth / 2) {
+                        leftTouch = false;
+                    } else {
+                        rightTouch = false;
+                    }
+                }
+
+                // Update ship movement
+                this.keys.left = leftTouch;
+                this.keys.right = rightTouch;
+            });
+
+            document.addEventListener('touchcancel', (event) => {
+                leftTouch = false;
+                rightTouch = false;
+                this.keys.left = false;
+                this.keys.right = false;
             });
         }
 
